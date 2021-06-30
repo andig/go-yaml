@@ -313,7 +313,7 @@ func (p *parser) mapping() *Node {
 type decoder struct {
 	doc     *Node
 	aliases map[*Node]bool
-	terrors []string
+	terrors []UnmarshalError
 
 	stringMapType  reflect.Type
 	generalMapType reflect.Type
@@ -359,7 +359,11 @@ func (d *decoder) terror(n *Node, tag string, out reflect.Value) {
 			value = " `" + value + "`"
 		}
 	}
-	d.terrors = append(d.terrors, fmt.Sprintf("line %d: cannot unmarshal %s%s into %s", n.Line, shortTag(tag), value, out.Type()))
+	d.terrors = append(d.terrors, UnmarshalError{
+		Message: fmt.Sprintf("cannot unmarshal %s%s into %s", shortTag(tag), value, out.Type()),
+		Line:    n.Line,
+		Column:  n.Column,
+	})
 }
 
 func (d *decoder) callUnmarshaler(n *Node, u Unmarshaler) (good bool) {
@@ -773,7 +777,11 @@ func (d *decoder) mapping(n *Node, out reflect.Value) (good bool) {
 			for j := i + 2; j < l; j += 2 {
 				nj := n.Content[j]
 				if ni.Kind == nj.Kind && ni.Value == nj.Value {
-					d.terrors = append(d.terrors, fmt.Sprintf("line %d: mapping key %#v already defined at line %d", nj.Line, nj.Value, ni.Line))
+					d.terrors = append(d.terrors, UnmarshalError{
+						Message: fmt.Sprintf("mapping key %#v already defined at line %d", nj.Value, ni.Line),
+						Line:    nj.Line,
+						Column:  nj.Column,
+					})
 				}
 			}
 		}
@@ -921,7 +929,11 @@ func (d *decoder) mappingStruct(n *Node, out reflect.Value) (good bool) {
 		if info, ok := sinfo.FieldsMap[sname]; ok {
 			if d.uniqueKeys {
 				if doneFields[info.Id] {
-					d.terrors = append(d.terrors, fmt.Sprintf("line %d: field %s already set in type %s", ni.Line, name.String(), out.Type()))
+					d.terrors = append(d.terrors, UnmarshalError{
+						Message: fmt.Sprintf("field %s already set in type %s", name.String(), out.Type()),
+						Line:    ni.Line,
+						Column:  ni.Column,
+					})
 					continue
 				}
 				doneFields[info.Id] = true
@@ -941,7 +953,11 @@ func (d *decoder) mappingStruct(n *Node, out reflect.Value) (good bool) {
 			d.unmarshal(n.Content[i+1], value)
 			inlineMap.SetMapIndex(name, value)
 		} else if d.knownFields {
-			d.terrors = append(d.terrors, fmt.Sprintf("line %d: field %s not found in type %s", ni.Line, name.String(), out.Type()))
+			d.terrors = append(d.terrors, UnmarshalError{
+				Message: fmt.Sprintf("field %s not found in type %s", name.String(), out.Type()),
+				Line:    ni.Line,
+				Column:  ni.Column,
+			})
 		}
 	}
 

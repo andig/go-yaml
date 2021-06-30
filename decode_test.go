@@ -1245,8 +1245,8 @@ func TestUnmarshalerWholeDocument(t *testing.T) {
 }
 
 func TestUnmarshalerTypeError(t *testing.T) {
-	unmarshalerResult[2] = &yaml.TypeError{[]string{"foo"}}
-	unmarshalerResult[4] = &yaml.TypeError{[]string{"bar"}}
+	unmarshalerResult[2] = &yaml.TypeError{[]yaml.UnmarshalError{{"foo", 1, 1}}}
+	unmarshalerResult[4] = &yaml.TypeError{[]yaml.UnmarshalError{{"bar", 1, 1}}}
 	defer func() {
 		delete(unmarshalerResult, 2)
 		delete(unmarshalerResult, 4)
@@ -1263,8 +1263,8 @@ func TestUnmarshalerTypeError(t *testing.T) {
 	expectedError := "" +
 		"yaml: unmarshal errors:\n" +
 		"  line 1: cannot unmarshal !!str `A` into int\n" +
-		"  foo\n" +
-		"  bar\n" +
+		"  line 1: foo\n" +
+		"  line 1: bar\n" +
 		"  line 1: cannot unmarshal !!str `B` into int"
 	if err == nil {
 		t.Fatalf("Unmarshal() expected error, got none.")
@@ -1298,8 +1298,8 @@ func TestUnmarshalerTypeError(t *testing.T) {
 }
 
 func TestObsoleteUnmarshalerTypeError(t *testing.T) {
-	unmarshalerResult[2] = &yaml.TypeError{[]string{"foo"}}
-	unmarshalerResult[4] = &yaml.TypeError{[]string{"bar"}}
+	unmarshalerResult[2] = &yaml.TypeError{[]yaml.UnmarshalError{{"foo", 1, 1}}}
+	unmarshalerResult[4] = &yaml.TypeError{[]yaml.UnmarshalError{{"bar", 1, 1}}}
 	defer func() {
 		delete(unmarshalerResult, 2)
 		delete(unmarshalerResult, 4)
@@ -1316,8 +1316,8 @@ func TestObsoleteUnmarshalerTypeError(t *testing.T) {
 	expectedError := "" +
 		"yaml: unmarshal errors:\n" +
 		"  line 1: cannot unmarshal !!str `A` into int\n" +
-		"  foo\n" +
-		"  bar\n" +
+		"  line 1: foo\n" +
+		"  line 1: bar\n" +
 		"  line 1: cannot unmarshal !!str `B` into int"
 	matched, mre := regexp.MatchString(expectedError, err.Error())
 	if mre != nil {
