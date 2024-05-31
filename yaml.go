@@ -360,7 +360,7 @@ func (e *TypeError) Error() string {
 	var b strings.Builder
 	b.WriteString("yaml: unmarshal errors:")
 	for _, err := range e.Errors {
-		b.WriteString(fmt.Sprintf("\n  line %d: %s", err.Line, err.Message))
+		b.WriteString("\n  " + err.Error())
 	}
 	return b.String()
 }
