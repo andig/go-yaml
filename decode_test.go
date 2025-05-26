@@ -1076,16 +1076,19 @@ func TestDecoderErrors(t *testing.T) {
 	}
 }
 
-func (s *S) TestParserError(c *C) {
+func TestParserError(t *testing.T) {
 	var v struct {
 		A, B int
 	}
 	data := "a: 1\n=\nb: 2"
 	err := yaml.Unmarshal([]byte(data), &v)
-	c.Assert(err, DeepEquals, &yaml.ParserError{
+	expectedErr := &yaml.ParserError{
 		Message: "could not find expected ':'",
 		Line:    2,
-	})
+	}
+	if !reflect.DeepEqual(err, expectedErr) {
+		t.Errorf("wrong err, got %#v expected %#v", err, expectedErr)
+	}
 }
 
 var unmarshalerTests = []struct {
@@ -1459,9 +1462,31 @@ func (ft *failingUnmarshaler) UnmarshalYAML(node *yaml.Node) error {
 }
 
 func TestUnmarshalerError(t *testing.T) {
-	err := yaml.Unmarshal([]byte("a: b"), &failingUnmarshaler{})
-	if err != failingErr {
-		t.Fatalf("Unmarshal() returned %v, want %v", err, failingErr)
+	data := `{foo: 123, bar: {}, spam: "test"}`
+	dst := struct {
+		Foo  int
+		Bar  *failingUnmarshaler
+		Spam string
+	}{}
+	err := yaml.Unmarshal([]byte(data), &dst)
+	expectedErr := &yaml.TypeError{
+		Errors: []yaml.UnmarshalError{
+			{Line: 1, Column: 17, Message: failingErr.Error()},
+		},
+	}
+	if !reflect.DeepEqual(expectedErr, err) {
+		t.Errorf("expected error %#v, got #%v", expectedErr, err)
+
+	}
+	// whatever could be unmarshaled must be unmarshaled
+	if got, want := dst.Foo, 123; got != want {
+		t.Errorf("foo unmarshaled incorrectly, got %#v, want  %#v", got, want)
+	}
+	if got, want := dst.Bar, (&failingUnmarshaler{}); !reflect.DeepEqual(got, want) {
+		t.Errorf("bar unmarshaled incorrectly, got %#v, want  %#v", got, want)
+	}
+	if got, want := dst.Spam, "test"; got != want {
+		t.Errorf("spam unmarshaled incorrectly, got %#v, want  %#v", got, want)
 	}
 }
 
@@ -1472,9 +1497,31 @@ func (ft *obsoleteFailingUnmarshaler) UnmarshalYAML(unmarshal func(interface{}) 
 }
 
 func TestObsoleteUnmarshalerError(t *testing.T) {
-	err := yaml.Unmarshal([]byte("a: b"), &obsoleteFailingUnmarshaler{})
-	if err != failingErr {
-		t.Fatalf("Unmarshal() returned %v, want %v", err, failingErr)
+	data := `{foo: 123, bar: {}, spam: "test"}`
+	dst := struct {
+		Foo  int
+		Bar  *obsoleteFailingUnmarshaler
+		Spam string
+	}{}
+	err := yaml.Unmarshal([]byte(data), &dst)
+	expectedErr := &yaml.TypeError{
+		Errors: []yaml.UnmarshalError{
+			{Line: 1, Column: 17, Message: failingErr.Error()},
+		},
+	}
+	if !reflect.DeepEqual(expectedErr, err) {
+		t.Errorf("expected error %#v, got #%v", expectedErr, err)
+
+	}
+	// whatever could be unmarshaled must be unmarshaled
+	if got, want := dst.Foo, 123; got != want {
+		t.Errorf("foo unmarshaled incorrectly, got %#v, want  %#v", got, want)
+	}
+	if got, want := dst.Bar, (&obsoleteFailingUnmarshaler{}); !reflect.DeepEqual(got, want) {
+		t.Errorf("bar unmarshaled incorrectly, got %#v, want  %#v", got, want)
+	}
+	if got, want := dst.Spam, "test"; got != want {
+		t.Errorf("spam unmarshaled incorrectly, got %#v, want  %#v", got, want)
 	}
 }
 
