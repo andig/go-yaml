@@ -337,7 +337,8 @@ func (e *ParserError) Error() string {
 	return b.String()
 }
 
-// UnmarshalError is each error with a source position found by Unmarshal.
+// UnmarshalError represents a single, non-fatal error that occurred during
+// the unmarshaling of a YAML document into a Go value.
 type UnmarshalError struct {
 	Message string
 	Line    int
