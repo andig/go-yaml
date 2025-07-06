@@ -355,9 +355,9 @@ func (d *decoder) terror(n *Node, tag string, out reflect.Value) {
 		}
 	}
 	d.terrors = append(d.terrors, UnmarshalError{
-		Message: fmt.Sprintf("cannot unmarshal %s%s into %s", shortTag(tag), value, out.Type()),
-		Line:    n.Line,
-		Column:  n.Column,
+		Err:    fmt.Errorf("cannot unmarshal %s%s into %s", shortTag(tag), value, out.Type()),
+		Line:   n.Line,
+		Column: n.Column,
 	})
 }
 
@@ -371,9 +371,9 @@ func (d *decoder) callUnmarshaler(n *Node, u Unmarshaler) (good bool) {
 		return false
 	default:
 		d.terrors = append(d.terrors, UnmarshalError{
-			Message: err.Error(),
-			Line:    n.Line,
-			Column:  n.Column,
+			Err:    err,
+			Line:   n.Line,
+			Column: n.Column,
 		})
 		return false
 	}
@@ -399,9 +399,9 @@ func (d *decoder) callObsoleteUnmarshaler(n *Node, u obsoleteUnmarshaler) (good 
 		return false
 	default:
 		d.terrors = append(d.terrors, UnmarshalError{
-			Message: err.Error(),
-			Line:    n.Line,
-			Column:  n.Column,
+			Err:    err,
+			Line:   n.Line,
+			Column: n.Column,
 		})
 		return false
 	}
@@ -785,9 +785,9 @@ func (d *decoder) mapping(n *Node, out reflect.Value) (good bool) {
 				nj := n.Content[j]
 				if ni.Kind == nj.Kind && ni.Value == nj.Value {
 					d.terrors = append(d.terrors, UnmarshalError{
-						Message: fmt.Sprintf("mapping key %#v already defined at line %d", nj.Value, ni.Line),
-						Line:    nj.Line,
-						Column:  nj.Column,
+						Err:    fmt.Errorf("mapping key %#v already defined at line %d", nj.Value, ni.Line),
+						Line:   nj.Line,
+						Column: nj.Column,
 					})
 				}
 			}
@@ -937,9 +937,9 @@ func (d *decoder) mappingStruct(n *Node, out reflect.Value) (good bool) {
 			if d.uniqueKeys {
 				if doneFields[info.Id] {
 					d.terrors = append(d.terrors, UnmarshalError{
-						Message: fmt.Sprintf("field %s already set in type %s", name.String(), out.Type()),
-						Line:    ni.Line,
-						Column:  ni.Column,
+						Err:    fmt.Errorf("field %s already set in type %s", name.String(), out.Type()),
+						Line:   ni.Line,
+						Column: ni.Column,
 					})
 					continue
 				}
@@ -961,9 +961,9 @@ func (d *decoder) mappingStruct(n *Node, out reflect.Value) (good bool) {
 			inlineMap.SetMapIndex(name, value)
 		} else if d.knownFields {
 			d.terrors = append(d.terrors, UnmarshalError{
-				Message: fmt.Sprintf("field %s not found in type %s", name.String(), out.Type()),
-				Line:    ni.Line,
-				Column:  ni.Column,
+				Err:    fmt.Errorf("field %s not found in type %s", name.String(), out.Type()),
+				Line:   ni.Line,
+				Column: ni.Column,
 			})
 		}
 	}

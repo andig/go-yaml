@@ -341,13 +341,13 @@ func (e *ParserError) Error() string {
 // UnmarshalError represents a single, non-fatal error that occurred during
 // the unmarshaling of a YAML document into a Go value.
 type UnmarshalError struct {
-	Message string
-	Line    int
-	Column  int
+	Err    error
+	Line   int
+	Column int
 }
 
 func (e UnmarshalError) Error() string {
-	return fmt.Sprintf("line %d: %s", e.Line, e.Message)
+	return fmt.Sprintf("line %d: %s", e.Line, e.Err.Error())
 }
 
 // A TypeError is returned by Unmarshal when one or more fields in

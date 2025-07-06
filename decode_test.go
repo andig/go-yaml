@@ -1260,8 +1260,8 @@ func TestUnmarshalerWholeDocument(t *testing.T) {
 }
 
 func TestUnmarshalerTypeError(t *testing.T) {
-	unmarshalerResult[2] = &yaml.TypeError{[]yaml.UnmarshalError{{"foo", 1, 1}}}
-	unmarshalerResult[4] = &yaml.TypeError{[]yaml.UnmarshalError{{"bar", 1, 1}}}
+	unmarshalerResult[2] = &yaml.TypeError{[]yaml.UnmarshalError{{errors.New("foo"), 1, 1}}}
+	unmarshalerResult[4] = &yaml.TypeError{[]yaml.UnmarshalError{{errors.New("bar"), 1, 1}}}
 	defer func() {
 		delete(unmarshalerResult, 2)
 		delete(unmarshalerResult, 4)
@@ -1313,8 +1313,8 @@ func TestUnmarshalerTypeError(t *testing.T) {
 }
 
 func TestObsoleteUnmarshalerTypeError(t *testing.T) {
-	unmarshalerResult[2] = &yaml.TypeError{[]yaml.UnmarshalError{{"foo", 1, 1}}}
-	unmarshalerResult[4] = &yaml.TypeError{[]yaml.UnmarshalError{{"bar", 1, 1}}}
+	unmarshalerResult[2] = &yaml.TypeError{[]yaml.UnmarshalError{{errors.New("foo"), 1, 1}}}
+	unmarshalerResult[4] = &yaml.TypeError{[]yaml.UnmarshalError{{errors.New("bar"), 1, 1}}}
 	defer func() {
 		delete(unmarshalerResult, 2)
 		delete(unmarshalerResult, 4)
@@ -1471,7 +1471,7 @@ func TestUnmarshalerError(t *testing.T) {
 	err := yaml.Unmarshal([]byte(data), &dst)
 	expectedErr := &yaml.TypeError{
 		Errors: []yaml.UnmarshalError{
-			{Line: 1, Column: 17, Message: failingErr.Error()},
+			{Line: 1, Column: 17, Err: failingErr},
 		},
 	}
 	if !reflect.DeepEqual(expectedErr, err) {
@@ -1506,7 +1506,7 @@ func TestObsoleteUnmarshalerError(t *testing.T) {
 	err := yaml.Unmarshal([]byte(data), &dst)
 	expectedErr := &yaml.TypeError{
 		Errors: []yaml.UnmarshalError{
-			{Line: 1, Column: 17, Message: failingErr.Error()},
+			{Line: 1, Column: 17, Err: failingErr},
 		},
 	}
 	if !reflect.DeepEqual(expectedErr, err) {
