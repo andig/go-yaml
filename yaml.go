@@ -320,8 +320,9 @@ func failf(format string, args ...interface{}) {
 	panic(&yamlError{fmt.Errorf("yaml: "+format, args...)})
 }
 
-// ParserError is each error with a source line position found by the parser.
-// Unlike UnmarshalErrors, it is only used for terminal failures.
+// ParserError represents a fatal error encountered during the parsing phase.
+// These errors typically indicate a syntax issue in the YAML document that
+// prevents further processing.
 type ParserError struct {
 	Message string
 	Line    int
