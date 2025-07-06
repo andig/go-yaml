@@ -1496,6 +1496,14 @@ func (ft *obsoleteFailingUnmarshaler) UnmarshalYAML(unmarshal func(interface{}) 
 	return failingErr
 }
 
+func TestUnmarshalErrorUnwraps(t *testing.T) {
+	err := yaml.UnmarshalError{Err: &yaml.ParserError{Message: "test"}}
+	asErr := new(yaml.ParserError)
+	if !errors.As(err, &asErr) {
+		t.Errorf("yaml.UnmarshalError doesn't unwrap")
+	}
+}
+
 func TestObsoleteUnmarshalerError(t *testing.T) {
 	data := `{foo: 123, bar: {}, spam: "test"}`
 	dst := struct {

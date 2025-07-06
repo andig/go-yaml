@@ -350,6 +350,10 @@ func (e UnmarshalError) Error() string {
 	return fmt.Sprintf("line %d: %s", e.Line, e.Err.Error())
 }
 
+func (e UnmarshalError) Unwrap() error {
+	return e.Err
+}
+
 // A TypeError is returned by Unmarshal when one or more fields in
 // the YAML document cannot be properly decoded into the requested
 // types. When this error is returned, the value is still
