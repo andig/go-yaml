@@ -1082,12 +1082,17 @@ func TestParserError(t *testing.T) {
 	}
 	data := "a: 1\n=\nb: 2"
 	err := yaml.Unmarshal([]byte(data), &v)
-	expectedErr := &yaml.ParserError{
-		Message: "could not find expected ':'",
-		Line:    2,
-	}
-	if !reflect.DeepEqual(err, expectedErr) {
-		t.Errorf("wrong err, got %#v expected %#v", err, expectedErr)
+	asErr := new(yaml.ParserError)
+	if !errors.As(err, &asErr) {
+		t.Errorf("error returned by Unmarshal doesn't unwrap into yaml.ParserError")
+	} else {
+		expectedErr := &yaml.ParserError{
+			Message: "could not find expected ':'",
+			Line:    2,
+		}
+		if !reflect.DeepEqual(asErr, expectedErr) {
+			t.Errorf("wrong err, got %#v expected %#v", asErr, expectedErr)
+		}
 	}
 }
 
@@ -1494,14 +1499,6 @@ type obsoleteFailingUnmarshaler struct{}
 
 func (ft *obsoleteFailingUnmarshaler) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	return failingErr
-}
-
-func TestUnmarshalErrorUnwraps(t *testing.T) {
-	err := yaml.UnmarshalError{Err: &yaml.ParserError{Message: "test"}}
-	asErr := new(yaml.ParserError)
-	if !errors.As(err, &asErr) {
-		t.Errorf("yaml.UnmarshalError doesn't unwrap")
-	}
 }
 
 func TestObsoleteUnmarshalerError(t *testing.T) {
